@@ -1,0 +1,310 @@
+//=====================
+//HTML code for webpage
+//=====================
+#include <SPIFFS.h>
+#include <FS.h>
+const char webpageCode[] PROGMEM =
+R"=====(
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Smart Blinds</title>
+
+  <style>
+    :root {
+  --bgcolor: rgb(205, 245, 255);
+  --text: rgb(44,44,44);
+}
+    html {
+      font-size: 5vw;
+    }
+    body {
+      background-color:var(--bgcolor);
+      margin-block: 0px;
+    }
+    #normalContent {
+
+      max-height: 100vh;
+      min-height: 100vh;
+      display:flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    p,span,button,input {
+      font-family: 'Open Sans', sans-serif;
+      
+    }
+    p {
+      font-size: 3vw;
+    }
+    #Title {
+      font-family: 'Open Sans', sans-serif;
+      text-align: center;
+      font-size: 10vw;
+      color:var(--text);
+      height: auto;
+      flex-grow: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-block: auto;
+      
+    }
+    #contentBlock {
+      background-color: rgb(255, 255, 255);
+      width: auto;
+      padding-block: 2%;
+      padding-inline: 5%;
+      margin-block-end: 5%;
+      border-radius: 5vw;
+    }
+    button {
+      color: var(--text);
+      background-color: var(--bgcolor);
+      border: none;
+      border-radius: 5vw;      
+      padding-inline: 10%;
+      padding-block: 5%;
+      font-weight: bold;
+      font-size: 5vw;
+      transition: 0.2s ease-out;
+      margin-block: 1%;
+      /* Prevent Text Selection */
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10 and IE 11 */
+      user-select: none; /* Standard syntax */
+    }
+    button:hover {
+      
+      cursor:pointer;
+    }
+    button:active {
+      background-color: lightcyan;
+    }
+    #configPanel button {
+      font-size: 3vw;
+      padding-inline: 5%;
+      padding-block: 2.5%;
+      border-radius: 2.5vw;      
+
+    }
+    input {
+      width: 30vw;
+      height: 30vw;
+      background-color: rgba(255, 255, 255, 0);
+      border: none;
+      font-size: 25vw;
+      margin-inline: 1vw;
+    }
+    input:focus {outline:none;}
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    #time {
+      margin-bottom: 2%;
+      height: auto;
+      font-size: 20vw;
+      width: auto;
+      border-radius: 5vw;
+      background-color: rgba(197, 217, 224, 0.521);
+      display:flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #configPanel {
+      display:none;
+      opacity: 0%;
+      transition: .2s ease-in-out;
+      height: 0px;
+    }
+    #rotationConfig {
+      border: 1px lightgray;
+      border-style: solid none;
+      
+    }
+    #currentTime {
+      color:red;
+    }
+    #currentAngleValue, #currentOpenAngleValue, #currentCloseAngleValue {
+      font-size: larger;
+      margin-left: 5%;
+    }
+    #pushUpdateButton {
+      width: 100%;
+    }
+  </style>
+  <script> <!---FUNCTIONS FOR ANIMATIONS-------------------------->
+    
+    /* drawObjects()
+    
+    function drawObjects() {
+      document.getElementById('TitleBar').style.height = parseInt(window.getComputedStyle(document.querySelector('body')).getPropertyValue('height')) -  parseInt(window.getComputedStyle(document.querySelector('#normalContent')).getPropertyValue('height')) + 'px';
+    } */
+    
+    function buttonClicked() {
+    
+      if (window.getComputedStyle(document.querySelector('#configPanel')).getPropertyValue('display') == 'none') {
+        document.getElementById('configPanel').style.display = 'block';
+        document.getElementById('openConfigPanel').innerHTML = 'Close Config Panel';
+        document.getElementById('configPanel').style.opacity = 100;
+        
+      }      
+      else {
+        document.getElementById('configPanel').style.display = 'none';
+        document.getElementById('openConfigPanel').innerHTML = 'Open Config Panel';
+        document.getElementById('configPanel').style.opacity = 0;
+
+      }
+    }
+    
+  </script>
+  <script> <!---FUNCTIONS FOR DATA TRANSFER-------------------------->
+var Socket;
+  let lastElement = null;
+  function init() {
+    Socket = new WebSocket('ws://' + window.location.hostname + ':81/');
+    console.log("WebSocket On");
+    Socket.onmessage = function(event) {
+      processCommand(event);
+    };
+  }
+
+  document.addEventListener("mousedown", function(event){
+    lastElement = event.target.id;
+    // console.log("Clicked: " + lastElement);
+    // document.getElementById(lastElement).style.backgroundColor = 'red';
+    switch(lastElement) {
+      case 'pushUpdateButton':
+        button_send_back();
+        break;
+      case 'fetchCurrentTimeButton':
+        request_current_time();
+        break;
+      case 'rotateUp':
+        console.log("Rotating Up");
+        request_rotate(1);
+        break;
+      case 'rotateDown':
+        console.log("Rotating Down");
+        request_rotate(-1);
+        break;
+      case 'StopButton':
+        console.log("Stopping Rotation CCW");
+        request_rotate(2);
+        break;
+      case 'setOpenButton':
+        setPosition(1);
+        break;
+      case 'setCloseButton':
+        setPosition(-1);
+        break;
+      
+    }
+
+
+  });
+  
+
+  //document.getElementById('pushUpdateButton').addEventListener('click', button_send_back);
+  function button_send_back() {
+    var OpenHour = document.getElementById('openTimeHour').value;
+    var OpenMin = document.getElementById('openTimeMinute').value;
+    var CloseHour = document.getElementById('closeTimeHour').value;
+     var CloseMin = document.getElementById('closeTimeMinute').value;
+    var msg = {
+      openTime: [OpenHour,OpenMin].join(":"),
+      closeTime: [CloseHour,CloseMin].join(":"), 
+  	};
+	Socket.send(JSON.stringify(msg));
+  console.log(msg);
+  }
+
+  function setPosition(position){
+    var msg = {
+      savePosition: position,
+  	};
+	Socket.send(JSON.stringify(msg));
+  console.log(msg);
+  }
+
+  function request_rotate(direction) {
+    var msg = {
+      rotate: direction,
+  	};
+	Socket.send(JSON.stringify(msg));
+  console.log(msg);
+  }
+    function processCommand(event) {
+    var obj = JSON.parse(event.data);
+    //document.getElementById('rand1').innerHTML = obj.rand1;
+    //document.getElementById('rand2').innerHTML = obj.rand2;
+    console.log(obj.Status);
+    console.log(obj.Time);
+  }
+  window.onload = function(event) {
+    console.log('Initialized');
+    init();
+  }
+  </script>
+</head>
+
+<body>
+  <div id = 'normalContent'>
+        <h1 id='Title'>
+          Smart Blinds
+        </h1>
+  
+    <div id='contentBlock'>
+      <div>
+      <p> Your blinds will open at:</p>
+      <div id='time'><input id='openTimeHour' type='number' value='00'/> : <input id='openTimeMinute' type='number' value='00'/></div>
+      </div>
+      <div>
+      <p> Your blinds will close at:</p>
+      <div id='time'><input id='closeTimeHour' type='number' value='00' /> : <input id='closeTimeMinute' type='number' value='00'/></div>
+      </div>
+      <button id='pushUpdateButton'> Push Update </button>
+    </div>
+
+    <div id='contentBlock'>
+      
+      <button id='openConfigPanel' onclick='buttonClicked()'> Open Config Panel </button>
+    </div>
+  </div>
+  <div id='configPanel'>
+    <div id='contentBlock'>
+      <p>Current time: <span id='currentTime'>Wednesday April 20, 2024 00:00:00</span></p>
+
+      <button id='fetchCurrentTimeButton' > Update Current Time </button>
+      
+      <div id='rotationConfig'>
+        
+        <button id='rotateUp' > Rotate /\ </button>
+        <button id='rotateDown' > Rotate \/ </button>
+        <button id='StopButton' > Stop </button>
+        <!-- <span> <span id='currentAngleValue'>10</span>&deg; </span> -->
+      </br>
+        <button id='setOpenButton' > SET OPEN </button>
+        <!-- <span> <span id='currentOpenAngleValue'>10</span>&deg; </span> -->
+      <!-- </br> -->
+        <button id='setCloseButton' > SET CLOSE </button>
+        <!-- <span> <span id='currentCloseAngleValue'>10</span>&deg; </span> -->
+        
+      </br>
+      </div>
+  </div>
+  </div>
+</body>
+</html>
+)=====";
+
+// void getHTMLData() {
+//   File file = SPIFFS.open("/page_v2.html");
+//   const char *htmldata;
+//   while(file.available()) {
+//     htmldta
+//   }
+
+
+// }
