@@ -11,13 +11,9 @@
 #include <HTTPClient.h>
 #include <AccelStepper.h>
 
-//-----------------------------------------------
-const char* ssid = "MyResNet-2G";
-const char* password = "Yellow-EastPaloAlto-57$";
-
-// const char* ssid = "Silence of the LANs";
-// const char* password = "UpTill500";
-//-----------------------------------------------
+//--Wifi Info---------------------------------------------
+const char* ssid = "Silence of the LANs";
+const char* password = "UpTill500";
 
 //--Time Sync------------------------------------
 const char* ntpServer = "pool.ntp.org";
