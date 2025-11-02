@@ -1,0 +1,58 @@
+{
+	"folders": [
+		{
+			"path": "../ESP32/ESP32FirstProgram"
+		},
+		{
+			"name": "ESPGettingMacAddress",
+			"path": "../ESP32/ESPGettingMacAddress"
+		},
+		{
+			"name": "StepperGUI",
+			"path": "../ESP32/StepperGUI"
+		},
+		{
+			"name": "ESPWebSocket",
+			"path": "../ESP32/ESPWebSocket"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"functional": "cpp",
+			"*.html": "cpp",
+			"*.tcc": "cpp",
+			"istream": "cpp",
+			"streambuf": "cpp",
+			"tuple": "cpp",
+			"cmath": "cpp",
+			"array": "cpp",
+			"deque": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp",
+			"vector": "cpp",
+			"string_view": "cpp",
+			"initializer_list": "cpp",
+			"unordered_set": "cpp"
+		},
+		"workbench.colorCustomizations": {
+			"activityBar.activeBackground": "#970936",
+			"activityBar.background": "#970936",
+			"activityBar.foreground": "#e7e7e7",
+			"activityBar.inactiveForeground": "#e7e7e799",
+			"activityBarBadge.background": "#0b1e02",
+			"activityBarBadge.foreground": "#e7e7e7",
+			"commandCenter.border": "#e7e7e799",
+			"sash.hoverBorder": "#970936",
+			"statusBar.background": "#670625",
+			"statusBar.foreground": "#e7e7e7",
+			"statusBarItem.hoverBackground": "#970936",
+			"statusBarItem.remoteBackground": "#670625",
+			"statusBarItem.remoteForeground": "#e7e7e7",
+			"titleBar.activeBackground": "#670625",
+			"titleBar.activeForeground": "#e7e7e7",
+			"titleBar.inactiveBackground": "#67062599",
+			"titleBar.inactiveForeground": "#e7e7e799"
+		},
+		"peacock.color": "#670625"
+	}
+}
