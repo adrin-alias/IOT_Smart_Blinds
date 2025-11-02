@@ -1,7 +1,7 @@
 # IOT Smart Blinds
 A small electromechanical device to automate opening & closing blinds at a lower cost than commercial alternatives.
 
-![Exploded View](docs\images\IoT_Smart_Blinds_Exploded_View.png)
+![Exploded View](docs/images/IoT_Smart_Blinds_Exploded_View.png)
 
 Repo Contains CAD and firmware for the first version on the device.
 
